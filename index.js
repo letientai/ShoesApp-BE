@@ -4,10 +4,10 @@ const bodyParser = require("body-parser");
 const ProductsRoute = require("./routes/products");
 const UsersRoute = require("./routes/users");
 const cors = require("cors");
+require('dotenv').config()
 const { allowCrossDomain } = require("./utils/corsMiddleware");
 
-const connection_string =
-  "mongodb+srv://admin:201111@cluster0.uhlkj5n.mongodb.net/test";
+const connection_string = process.env.CONNECTION_STRING
 
 mongoose.connect(connection_string, {
   useNewUrlParser: true,
@@ -35,6 +35,7 @@ app.use(allowCrossDomain);
 database.once("connected", () => {
   console.log("Database Connected");
 });
+
 app.use("/api/products", ProductsRoute);
 app.use("/api/users", UsersRoute);
 

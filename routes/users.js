@@ -8,5 +8,6 @@ route.get("/getAllUsers", UserController.getAllUsers);
 route.get("/getUserById/:userId", UserController.getUserById);
 route.delete("/removeUser/:userId", UserController.removeUser);
 route.patch("/editUser/:userId", UserController.editInfo);
+route.post("/login", UserController.login);
 
 module.exports = route;

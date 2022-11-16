@@ -2,7 +2,10 @@ const Users = require("../models/users");
 const UsersSchema = require("../helpers/validation");
 const { errorFunction } = require("../utils/errorFunction");
 const securePassword = require("../utils/securePassword");
-// Create product
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+
 const register = async (req, res, next) => {
   try {
     const existingEmail = await Users.findOne({
@@ -31,7 +34,7 @@ const register = async (req, res, next) => {
       if (newUser) {
         return res
           .status(201)
-          .json(errorFunction(false, "User Created", newUser));
+          .json(errorFunction(false, 403, "User Created", newUser));
       } else {
         return res
           .status(403)
@@ -40,6 +43,46 @@ const register = async (req, res, next) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(400).json({
+      message: "Bad request.",
+      error,
+      statusCode: 400,
+    });
+  }
+};
+
+const login = async (req, res, next) => {
+  try {
+    var username = req.body.username;
+    var password = req.body.password;
+    Users.findOne({ username: username }).then((user) => {
+      if (user) {
+        bcrypt.compare(password, user.password, function (err, results) {
+          if (err) {
+            res.json(errorFunction(true, 400, "Wrong password"));
+          }
+          if (results) {
+            let access_token = jwt.sign({name: user.username, role: user.role}, 'secretValue', {expiresIn: "1h"})
+            const dataUser = {
+              userId: user._id,
+              username: user.username,
+              fistName: user.fistName,
+              lastName: user.lastName,
+              access_token,
+              phone: user.phone,
+              email: user.email,
+              avatar: user.avatar,
+              role: user.role,
+              address: user.address,
+            };
+            res.json(errorFunction(false, 400, "Login successfuly", dataUser));
+          }
+        });
+      } else {
+        res.json(errorFunction(true, 400, "Account does not exist"));
+      }
+    });
+  } catch (error) {
     res.status(400).json({
       message: "Bad request.",
       error,
@@ -138,4 +181,5 @@ module.exports = {
   getUserById,
   removeUser,
   editInfo,
+  login,
 };

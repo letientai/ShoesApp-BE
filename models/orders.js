@@ -31,6 +31,10 @@ const ordersSchema = new Schema(
       type: String,
       require: true,
     },
+    image:{
+      type: String,
+      require: true
+    },
     userName: {
       type: String,
       require: true,
@@ -44,7 +48,7 @@ const ordersSchema = new Schema(
       require: true,
     },
     orderStatus: {
-      type: String,
+      type: Number,
       require: true,
     },
   },

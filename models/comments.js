@@ -7,7 +7,11 @@ const commentsSchema = new Schema(
       type: String,
       require: true,
     },
-    productName: {
+    userId: {
+      type: String,
+      require: true,
+    },
+    userName: {
       type: String,
       require: true,
     },

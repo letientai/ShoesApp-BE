@@ -1,5 +1,4 @@
 const Users = require("../models/users");
-const UsersSchema = require("../helpers/validation");
 const { errorFunction } = require("../utils/errorFunction");
 const securePassword = require("../utils/securePassword");
 const bcrypt = require("bcryptjs");

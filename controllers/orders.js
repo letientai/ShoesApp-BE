@@ -2,6 +2,7 @@ const Orders = require("../models/orders");
 const Users = require("../models/users");
 const Products = require("../models/products");
 const { errorFunction } = require("../utils/errorFunction");
+const HistoriesController = require("../controllers/histories")
 
 const createOrder = async (req, res, next) => {
   try {
@@ -18,6 +19,7 @@ const createOrder = async (req, res, next) => {
       );
     }
     const order = await Orders(req.body);
+    HistoriesController.createHistory(req, res, next)
     order
       .save()
       .then(

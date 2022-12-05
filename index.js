@@ -6,6 +6,7 @@ const UsersRoute = require("./routes/users");
 const OrderRoute = require("./routes/orders");
 const CartRoute = require("./routes/carts");
 const CommentRoute = require("./routes/comments");
+const HistoryRoute = require("./routes/histories");
 const cors = require("cors");
 require('dotenv').config()
 const { allowCrossDomain } = require("./utils/corsMiddleware");
@@ -44,6 +45,7 @@ app.use("/api/users", UsersRoute);
 app.use("/api/orders", OrderRoute);
 app.use("/api/carts", CartRoute);
 app.use("/api/comments", CommentRoute);
+app.use("/api/histories", HistoryRoute);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

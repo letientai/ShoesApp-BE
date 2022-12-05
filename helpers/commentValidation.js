@@ -9,7 +9,7 @@ const validation = Joi.object({
   rating: Joi.number().min(0).max(5).required(),
 });
 
-const cartValidation = async (req, res, next) => {
+const commentValidation = async (req, res, next) => {
   const { error } = validation.validate(req.body);
   if (error) {
     return res
@@ -19,4 +19,4 @@ const cartValidation = async (req, res, next) => {
     next();
   }
 };
-module.exports = cartValidation;
+module.exports = commentValidation;

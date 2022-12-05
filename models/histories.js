@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const commentsSchema = new Schema(
+const HistoriesSchema = new Schema(
   {
     productId: {
       type: String,
@@ -19,19 +19,19 @@ const commentsSchema = new Schema(
       type: Number,
       require: true,
     },
-    quatily: {
+    quatity: {
       type: Number,
       require: true,
     },
     orderStatus: {
-      type: String,
+      type: Number,
       require: true,
     },
     image: {
       type: String,
       require: true,
     },
-    userld: {
+    userId: {
       type: String,
       require: true,
     },
@@ -39,5 +39,5 @@ const commentsSchema = new Schema(
   { timestamps: true }
 );
 
-const Comments = mongoose.model("Comments", commentsSchema);
-module.exports = Comments;
+const Histories = mongoose.model("Histories", HistoriesSchema);
+module.exports = Histories;

@@ -15,7 +15,7 @@ const ordersSchema = new Schema(
       type: String,
       require: true,
     },
-    quatily: {
+    quatity: {
       type: Number,
       require: true,
     },
@@ -27,7 +27,7 @@ const ordersSchema = new Schema(
       type: String,
       require: true,
     },
-    userld: {
+    userId: {
       type: String,
       require: true,
     },

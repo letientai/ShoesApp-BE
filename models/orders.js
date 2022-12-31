@@ -51,6 +51,10 @@ const ordersSchema = new Schema(
       type: Number,
       require: true,
     },
+    cartId: {
+      type: String,
+      require: false   
+    }
   },
   { timestamps: true }
 );

@@ -9,5 +9,7 @@ route.get("/getUserById/:userId", UserController.getUserById);
 route.delete("/removeUser/:userId", UserController.removeUser);
 route.patch("/editUser/:userId", UserController.editInfo);
 route.post("/login", UserController.login);
+route.post("/changePassword", UserController.changePassword);
+route.post("/forgotPassword", UserController.forgotPassword);
 
 module.exports = route;

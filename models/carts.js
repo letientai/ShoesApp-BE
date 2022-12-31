@@ -19,6 +19,10 @@ const cartsSchema = new Schema(
       type: Number,
       require: true,
     },
+    quantity: {
+      type: Number,
+      require: true,
+    },
     image: {
       type: String,
       require: true,

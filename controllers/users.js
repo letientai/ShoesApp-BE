@@ -1,9 +1,9 @@
 const Users = require("../models/users");
 const { errorFunction } = require("../utils/errorFunction");
+const nodemailer = require("nodemailer");
 const securePassword = require("../utils/securePassword");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 
 const register = async (req, res, next) => {
   try {
@@ -50,6 +50,73 @@ const register = async (req, res, next) => {
   }
 };
 
+const forgotPassword = async (req, res, next) => {
+  try {
+    const existingUser = await Users.findOne({ email: req.body.email }).lean(
+      true
+    );
+    if (!existingUser) {
+      res.status(403);
+      return res.json(errorFunction(true, 403, "User does not exists"));
+    } else {
+      const randomPassword = Math.random().toString(36).slice(2, 10);
+
+      const userId = existingUser._id.valueOf();
+
+      const hashedPassword = await securePassword(randomPassword);
+      const request = {
+        password: hashedPassword,
+      };
+
+      Users.findByIdAndUpdate(userId, request, {
+        useFindAndModify: false,
+      }).then((data) => {
+        if (!data) {
+          return res.json(errorFunction(true, 404, "Bad request"));
+        } else {
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+              user: "letai97md@gmail.com", // generated ethereal user
+              pass: "aojcizzcrsnqvirb", // generated ethereal password
+            },
+          });
+          
+          const mailOptions = {
+            from: "letai97md@gmail.com",
+            to: req.body.email,
+            subject: "Hello ✔", // Subject line
+            text: "Hello world?", // plain text body
+            html: `<b>This is an automation email from shoeApp. Your password was updated</b>
+             <ul>
+            <li>Username: ${existingUser.username}</li>
+            <li>Email: ${existingUser.email}</li>
+            <li>Password: ${randomPassword}</li>
+            </ul>
+            <p>Please change your password to project your infomation</p>
+            `, // html body
+          };
+
+          transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+              console.log("error: ", error);
+            } else {
+              console.log("email sent: " + info.response);
+            }
+          });
+          return res.json(
+            errorFunction(false, 200, "Updated user's password successfully!")
+          );
+        }
+      });
+    }
+  } catch (error) {
+    return res.json(errorFunction(true, 400, "Bad request"));
+  }
+};
+
 const login = async (req, res, next) => {
   try {
     var username = req.body.username;
@@ -57,11 +124,12 @@ const login = async (req, res, next) => {
     Users.findOne({ username: username }).then((user) => {
       if (user) {
         bcrypt.compare(password, user.password, function (err, results) {
-          if (err) {
-            res.json(errorFunction(true, 400, "Wrong password"));
-          }
           if (results) {
-            let access_token = jwt.sign({name: user.username, role: user.role}, 'secretValue', {expiresIn: "1h"})
+            let access_token = jwt.sign(
+              { name: user.username, role: user.role },
+              "secretValue",
+              { expiresIn: "1h" }
+            );
             const dataUser = {
               userId: user._id,
               username: user.username,
@@ -75,6 +143,8 @@ const login = async (req, res, next) => {
               address: user.address,
             };
             res.json(errorFunction(false, 400, "Login successfuly", dataUser));
+          } else {
+            res.status(400).json(errorFunction(true, 400, "Wrong password"));
           }
         });
       } else {
@@ -169,7 +239,55 @@ const removeUser = (req, res) => {
     });
   } catch (error) {
     res.json({
-      message: "User Deleted Unsuccessfully!",
+      message: "Bad request",
+    });
+  }
+};
+const changePassword = async (req, res) => {
+  try {
+    let userId = req.body.userId;
+    const existingUser = await Users.findById(userId);
+
+    if (!existingUser) {
+      return res
+        .status(403)
+        .json(errorFunction(true, 403, "User is not exists"));
+    } else {
+      const encryptPassword = bcrypt.compareSync(
+        req.body.oldPassword,
+        existingUser.password
+      );
+      if (encryptPassword) {
+        const hashedPassword = await securePassword(req.body.newPassword);
+        const request = { password: hashedPassword };
+        Users.findByIdAndUpdate(userId, request, {
+          useFindAndModify: false,
+        }).then((data) => {
+          if (!data) {
+            return res
+              .status(400)
+              .json(errorFunction(true, 400, "Bad request"));
+          } else {
+            return res
+              .status(200)
+              .json(
+                errorFunction(
+                  false,
+                  200,
+                  "Updated user's password successfully!"
+                )
+              );
+          }
+        });
+      } else {
+        return res
+          .status(403)
+          .json(errorFunction(true, 403, "Password does not match"));
+      }
+    }
+  } catch (error) {
+    res.json({
+      message: "Bad request",
     });
   }
 };
@@ -181,4 +299,6 @@ module.exports = {
   removeUser,
   editInfo,
   login,
+  changePassword,
+  forgotPassword
 };

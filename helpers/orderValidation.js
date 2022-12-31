@@ -5,7 +5,7 @@ const validation = Joi.object({
   productId: Joi.string().required().trim(),
   productName: Joi.string().required(),
   productBrand: Joi.string().required(),
-  quatity: Joi.number().min(0).required(),
+  quantity: Joi.number().min(0).required(),
   price: Joi.number().min(0).required(),
   type: Joi.string().required(),
   userId: Joi.string().required().trim(),
@@ -14,6 +14,7 @@ const validation = Joi.object({
   phone: Joi.string().required().trim(),
   address: Joi.string().required().min(5).max(100),
   orderStatus: Joi.number().required().min(0).max(5),
+  cartId: Joi.optional()
 });
 
 const orderValidation = async (req, res, next) => {

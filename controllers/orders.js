@@ -1,13 +1,41 @@
 const Orders = require("../models/orders");
 const Users = require("../models/users");
 const Products = require("../models/products");
+const Carts = require("../models/carts");
 const { errorFunction } = require("../utils/errorFunction");
 const HistoriesController = require("../controllers/histories")
+
+const addMultipleOrders = async (req, res, next) => {
+  try {
+    const items = req.body.map((item) => new Orders(item))
+
+    Promise.all(items.map((item) => {
+      if (item.cartId) {
+        deleteProductByIdInCart(item.cartId)
+      }
+      item.save()
+    }),
+    ).then((result) => {
+      res.status(201)
+      return res.json(errorFunction(false, 201, "Order created"))
+    }).catch((error) => {
+      res.status(400)
+      return res.json(errorFunction(true, 400, "Bad request"))
+    })
+
+  } catch (error) {
+    res.status(400)
+    return res.json(errorFunction(true, 400, "Bad request"))
+  }
+}
 
 const createOrder = async (req, res, next) => {
   try {
     const productId = await Products.findById(req.body.productId);
     const userId = await Users.findById(req.body.userId);
+    const requestProduct = { quantity: productId.quantity - req.body.quantity }
+    const cartId = req.body?.cartId
+    delete req.body?.cartId
     if (!productId) {
       return res.json(
         errorFunction(true, 204, "This product Id have not in the database")
@@ -18,13 +46,36 @@ const createOrder = async (req, res, next) => {
         errorFunction(true, 204, "This user Id have not in the database")
       );
     }
-    const order = await Orders(req.body);
-    HistoriesController.createHistory(req, res, next)
-    order
-      .save()
-      .then(
-        res.status(201).json(errorFunction(false, 201, "Order Created", order))
-      );
+    if (req.body.quantity <= productId.quantity) {
+      // Add order
+      const newOrder = await Orders.create(req.body)
+      if (newOrder) {
+        // Update product
+
+        Products.findByIdAndUpdate(req.body.productId, requestProduct).then(
+          (data) => {
+            if (data) {
+
+              res.status(201)
+              return res.json(
+                errorFunction(false, 201, 'Order Created', newOrder)
+              )
+            } else {
+              return res.json(errorFunction(true, 400, 'Bad request'))
+            }
+          },
+        )
+        if (cartId) {
+          deleteProductByIdInCart(cartId)
+        }
+      } else {
+        res.status(403)
+        return res.json(errorFunction(true, 403, 'Error Creating Order'))
+      }
+    } else {
+      // Show message
+      return res.json(errorFunction(true, 206, 'The quantity is greater than quantity in the stock'))
+    }
   } catch (error) {
     console.log(error);
     res.status(201).json(errorFunction(true, 403, "Error Creating Order"));
@@ -53,6 +104,8 @@ const getAllOrders = async (req, res, next) => {
     const allOrders = await Orders.find(filter);
 
     const data = {
+      totalFilter: filterOrders.length,
+      totalOrder: allOrders.length,
       filterOrders,
       allOrders,
     };
@@ -164,11 +217,21 @@ const getOrderByUserId = async (req, res, next) => {
   }
 }
 
+const deleteProductByIdInCart = async (cartId) => {
+  try {
+    await Carts.findByIdAndRemove(cartId)
+  } catch (error) {
+    console.log("ERR");
+  }
+};
+
+
 module.exports = {
   createOrder,
   getAllOrders,
   getOrderById,
   editOrder,
   removeOrder,
-  getOrderByUserId
+  getOrderByUserId,
+  addMultipleOrders
 };

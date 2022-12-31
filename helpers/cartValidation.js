@@ -6,6 +6,7 @@ const validation = Joi.object({
   productName: Joi.string().required(),
   productBrand: Joi.string().required(),
   price: Joi.number().min(0).required(),
+  quantity: Joi.number().min(0).required(),
   userId: Joi.string().required().trim(),
   image: Joi.string().required().trim(),
 });
